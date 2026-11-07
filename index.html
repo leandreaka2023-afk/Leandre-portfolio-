@@ -35,4 +35,73 @@
 <script>
 let current='fr';const langBtn=document.getElementById('lang');function setLang(l){current=l;document.documentElement.lang=l;document.querySelectorAll('[data-fr]').forEach(el=>{el.textContent=el.dataset[l]});langBtn.textContent=l==='fr'?'EN':'FR';}langBtn.addEventListener('click',()=>setLang(current==='fr'?'en':'fr'));document.getElementById('menu').addEventListener('click',()=>document.getElementById('links').classList.toggle('open'));document.querySelectorAll('.links a').forEach(a=>a.addEventListener('click',()=>document.getElementById('links').classList.remove('open')));document.getElementById('year').textContent=new Date().getFullYear();
 </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>
+(async function () {
+  try {
+    const db = window.supabase.createClient(
+      window.PORTFOLIO_SUPABASE_URL,
+      window.PORTFOLIO_SUPABASE_PUBLISHABLE_KEY
+    );
+
+    const { data, error } = await db
+      .from('portfolio_content')
+      .select('content')
+      .eq('id', 1)
+      .single();
+
+    if (error) throw error;
+
+    const c = data.content || {};
+
+    // Mettre à jour le nom
+    if (c.name) {
+      const h1 = document.querySelector('#home h1');
+      if (h1) {
+        const words = c.name.trim().split(/\s+/);
+        h1.textContent = c.name;
+      }
+    }
+
+    // Mettre à jour les présentations bilingues
+    const intro = document.querySelector('#home p');
+    if (intro) {
+      intro.dataset.fr = c.intro_fr || intro.dataset.fr;
+      intro.dataset.en = c.intro_en || intro.dataset.en;
+    }
+
+    const about = document.querySelector('#about .about-grid p');
+    if (about) {
+      about.dataset.fr = c.about_fr || about.dataset.fr;
+      about.dataset.en = c.about_en || about.dataset.en;
+    }
+
+    // Mettre à jour les compétences
+    const skillsBox = document.querySelector('#skills .skills');
+    if (skillsBox && (c.skills_fr || c.skills_en)) {
+      const fr = c.skills_fr || [];
+      const en = c.skills_en || [];
+      skillsBox.replaceChildren();
+
+      fr.forEach((skill, i) => {
+        const span = document.createElement('span');
+        span.className = 'skill';
+        span.dataset.fr = skill;
+        span.dataset.en = en[i] || skill;
+        skillsBox.appendChild(span);
+      });
+    }
+
+    // Réappliquer la langue sélectionnée
+    if (typeof setLang === 'function') {
+      setLang(document.documentElement.lang || 'fr');
+    }
+
+    console.log('Portfolio synchronisé avec Supabase.');
+  } catch (error) {
+    console.error('Erreur de synchronisation :', error);
+  }
+})();
+</script>
 </body></html>
