@@ -59,9 +59,20 @@ let current='fr';const langBtn=document.getElementById('lang');function setLang(
     if (c.name) {
       const h1 = document.querySelector('#home h1');
       if (h1) {
-        const words = c.name.trim().split(/\s+/);
         h1.textContent = c.name;
       }
+    }
+
+    // Afficher le titre professionnel enregistré dans l'administration
+    if (c.title) {
+      let title = document.getElementById('professional-title');
+      if (!title) {
+        title = document.createElement('div');
+        title.id = 'professional-title';
+        title.style.cssText = 'font-size:18px;font-weight:700;color:#e0bd82;margin-top:-8px;';
+        document.querySelector('#home h1')?.insertAdjacentElement('afterend', title);
+      }
+      title.textContent = c.title;
     }
 
     // Mettre à jour les présentations bilingues
